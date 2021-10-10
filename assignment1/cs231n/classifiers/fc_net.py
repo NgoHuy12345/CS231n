@@ -93,13 +93,9 @@ class TwoLayerNet(object):
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         num_train = X.shape[0]
         X = X.reshape(num_train, -1)
-        affine1 = X.dot(self.params['W1']) + self.params['b1'].reshape(1, -1) 
-        affine1[affine1 < 0] = 0
-        ReLU1 = affine1
-        affine2 = ReLU1.dot(self.params['W2']) + self.params['b2'].reshape(1, -1)
-        tmp = np.exp(affine2)
-        softmax = tmp / tmp.sum(1, keepdims=True)
-        scores = softmax
+        a1, cache_X = affine_relu_forward(X, self.params['W1'], self.params['b1'])
+        z2, cache_a1 = affine_forward(a1, self.params['W2'], self.params['b2'])
+        scores = z2
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
         #                             END OF YOUR CODE                             #
@@ -121,11 +117,13 @@ class TwoLayerNet(object):
         # of 0.5 to simplify the expression for the gradient.                      #
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
-        loss = -np.log(softmax[np.arange(num_train), y]).sum() / num_train
-        loss += 0.5 * self.reg * (self.params['W1'] ** 2).sum() + (self.params['W2'] ** 2).sum()
-
-        d_loss = 
+        loss, d_a2 = softmax_loss(z2, y)
+        loss += 0.5 * self.reg * (self.params['W1'] ** 2).sum() + 0.5 * self.reg * (self.params['W2'] ** 2).sum()
+        
+        d_x_affine_2, grads['W2'], grads['b2'] = affine_backward(d_a2,cache_a1)
+        _, grads['W1'], grads['b1'] = affine_relu_backward(d_x_affine_2, cache_X)
+        grads['W1'] += self.reg * self.params['W1']
+        grads['W2'] += self.reg * self.params['W2']
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
         #                             END OF YOUR CODE                             #

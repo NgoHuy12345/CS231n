@@ -89,10 +89,7 @@ def relu_forward(x):
     # TODO: Implement the ReLU forward pass.                                  #
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-    x_tmp = x
-    x_tmp[np.where(x < 0)] = 0
-    out = x_tmp
-
+    out = np.maximum(0, x)
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
     #                             END OF YOUR CODE                            #
@@ -118,8 +115,8 @@ def relu_backward(dout, cache):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     dx = x
-    dx[x < 0] = 0
-    dx[x >= 0] = 1
+    dx[dx < 0] = 0
+    dx[dx > 0] = 1
     dx = dx * dout
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
@@ -191,7 +188,7 @@ def softmax_loss(x, y):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     num_train = x.shape[0]
-    x = np.exp(x)
+    x = np.exp(x - np.max(x, 1, keepdims=True))
     softmax = x / np.sum(x, 1, keepdims=True)
     loss = -np.log(softmax[np.arange(num_train), y]).sum() / num_train
 
